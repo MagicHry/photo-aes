@@ -27,12 +27,6 @@ bootstrap = Bootstrap(app)
 log.register_logger(app)
 app.logger.name="PhotoAes"
 
-# 数据库初始化
-db.create_all()
-
-# 照片美学相关环境启动
-AesModel.initModel(app.config['AES_MODEL_PATH'])
-
 """
 db对象，这里因为只是用来存储一下文件名，用户id和照片美学得分的
 所以简单做，只是一个简单存储而已
@@ -256,5 +250,9 @@ def create_app():
     """
 
 if __name__ == '__main__':
+    # 数据库初始化
+    db.create_all()
+    # 照片美学相关环境启动
+    AesModel.initModel(app.config['AES_MODEL_PATH'])
     # 后台业务逻辑启动
-    app.run(debug=True)
+    app.run()
