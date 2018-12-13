@@ -1,0 +1,11 @@
+{% extends "loginbase.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}照片美学{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>体验之前请先登录</h1>
+</div>
+{{ wtf.quick_form(form) }}
+{% endblock %}
