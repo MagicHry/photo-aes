@@ -12,6 +12,7 @@ import random
 from core.helper import FileUtils
 from core.helper import LogUtils as log
 from core.photoaes import PhotoAesModel as AesModel
+import threading
 
 # flask 后台相关
 app = Flask(__name__)
@@ -231,8 +232,8 @@ def login():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    if not AesModel.initFinish():
-        return render_template('invalid.html')
+    # if not AesModel.initFinish():
+    #     return render_template('invalid.html')
     if ServerConfig.SESSION_KEY_NAME in session:
         # 登录态被记住，那么直接进照片美学页面
         userName, userId = getUserId()
@@ -243,16 +244,19 @@ def index():
     return redirect(url_for('login'))
 
 
-def create_app():
+def launch_tensorflow():
     """
     flask启动前初始化
     :return:
     """
+    # 照片美学相关环境启动
+    AesModel.initModel(app.config['AES_MODEL_PATH'])
 
 if __name__ == '__main__':
     # 数据库初始化
     db.create_all()
     # 照片美学相关环境启动
-    AesModel.initModel(app.config['AES_MODEL_PATH'])
+    new_thread = threading.Thread(target=launch_tensorflow)
+    new_thread.start()
     # 后台业务逻辑启动
-    app.run()
+    app.run(debug=True)
