@@ -23,6 +23,8 @@ hasModelInit = False
 graph = None
 # session
 session = None
+# 同步标志
+in_progress = False
 
 def initFinish():
     """
