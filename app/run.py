@@ -229,11 +229,24 @@ def get_file(filename):
 def login():
     return UsrHandle.handleUserLogin(request.method, session)
 
+@app.route('/triger', methods=['GET', 'POST'])
+def triger():
+    """
+    程序后面函数
+    用来让我自己启动tensorflow用的
+    :return:
+    """
+    # 照片美学相关环境启动
+    new_thread = threading.Thread(target=launch_tensorflow)
+    new_thread.start()
+
+    return render_template('active.html')
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # if not AesModel.initFinish():
-    #     return render_template('invalid.html')
+    if not AesModel.initFinish():
+        return render_template('invalid.html')
     if ServerConfig.SESSION_KEY_NAME in session:
         # 登录态被记住，那么直接进照片美学页面
         userName, userId = getUserId()
@@ -255,8 +268,5 @@ def launch_tensorflow():
 if __name__ == '__main__':
     # 数据库初始化
     db.create_all()
-    # 照片美学相关环境启动
-    new_thread = threading.Thread(target=launch_tensorflow)
-    new_thread.start()
     # 后台业务逻辑启动
-    app.run(debug=True)
+    app.run()

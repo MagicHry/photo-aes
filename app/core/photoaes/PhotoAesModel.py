@@ -21,6 +21,8 @@ model = None
 hasModelInit = False
 # 全局graph
 graph = None
+# session
+session = None
 
 def initFinish():
     """
@@ -48,18 +50,26 @@ def initModel(weightsFilePath):
         log.info('the model has already init before, now re-use it')
         return
 
+    # 同步控制
+    graph = tf.Graph()
+    # session = tf.Session()
+
     # 模型构建
     log.info(('start to build model based on weights in -> %s' % (weightsFilePath)))
-    with tf.device('/CPU:0'):
+    # with tf.device('/CPU:0'):
+
+    with graph.as_default():
+        # with session.as_default():
         # 模型参数定义
         base_model = InceptionResNetV2(input_shape=(None, None, 3), include_top=False, pooling='avg', weights=None)
+        log.info('suc create v2 model')
         x = Dropout(0.75)(base_model.output)
         x = Dense(10, activation='softmax')(x)
         model = Model(base_model.input, x)
         # 读取权重数据
         model.load_weights(weightsFilePath)
 
-    graph = tf.get_default_graph()
+    # graph = tf.get_default_graph()
     hasModelInit = True
     log.info('model init complete!')
     return
@@ -80,17 +90,21 @@ def runModelForSingleImg(imgFilePath, resize):
         log.error('Failed to calculate aes score : model is not initialized!')
         return
 
-    with tf.device('/CPU:0'):
-        with graph.as_default():
+    # with tf.device('/CPU:0'):
+    #     with graph.as_default():
+    with graph.as_default():
+        # with session.as_default():
+        log.info('Now processing img -> %s' % (imgFilePath))
+        # 预处理
+        imgArr = _preImgProcess(imgFilePath, resize)
+        # 预测
+        scores = model.predict(imgArr, batch_size=1, verbose=0)[0]
+        aesScore = score.calculateAesScore(scores)
+        aesScore = aesScore * 10
 
-            log.info('Now processing img -> %s' % (imgFilePath))
-            # 预处理
-            imgArr = _preImgProcess(imgFilePath, resize)
-            # 预测
-            scores = model.predict(imgArr, batch_size=1, verbose=0)[0]
-            aesScore = score.calculateAesScore(scores)
-            aesScore = aesScore * 10
-            return aesScore
+    return aesScore
+
+
 
 def runModel(imgFilePathLst, resize):
     """

@@ -22,10 +22,12 @@ def register_logger(app):
 def error(msg):
     global flaskApp
     flaskApp.logger.error(msg)
+    print(msg)
 
 def info(msg):
     global flaskApp
-    flaskApp.logger.info(msg)
+    flaskApp.logger.error(msg)
+    print(msg)
 
 
 
