@@ -1,5 +1,6 @@
 # coding=utf-8
 """
+注意：这里改用SOCKET了，这个脚本放弃
 模型管理
 负责启动tensorflow，运行美学程序使用的模型
 模型本身为Inception-V2模型

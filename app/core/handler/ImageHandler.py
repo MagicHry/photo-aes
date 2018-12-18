@@ -79,7 +79,7 @@ def handlePhotoGet(app, aes_score_container, user_id):
         file_saved = uploadfile(name=f, size=size)
         if f in aes_score_container:
             aes_score = aes_score_container[f]
-            file_saved.aes_score = aes_score
+            file_saved.aes_score = (u'美学得分：%s' % aes_score)
         else:
             file_saved.aes_score = u'未知错误'
 

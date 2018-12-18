@@ -8,11 +8,9 @@ import core.handler.ImageHandler as ImgHandle
 import core.handler.LoginHandler as UsrHandle
 from config import ServerConfig
 from flask_sqlalchemy import SQLAlchemy
-import random
 from core.helper import FileUtils
 from core.helper import LogUtils as log
-from core.photoaes import PhotoAesModel as AesModel
-import threading
+from core.photoaes import AesRequest
 
 # flask 后台相关
 app = Flask(__name__)
@@ -125,8 +123,8 @@ def upload():
             if img_path:
 
                 # 计算美学得分
-                aes_score = AesModel.runModelForSingleImg(img_path, True)
-                aes_score_str = (u"美学得分：%.2f" % aes_score)
+                aes_score = AesRequest.make_request(os.path.abspath(img_path))
+                aes_score_str = (u"美学得分：%s" % aes_score)
                 return_msg.aes_score = aes_score_str
 
                 # 整体数据落db
@@ -229,49 +227,21 @@ def get_file(filename):
 def login():
     return UsrHandle.handleUserLogin(request.method, session)
 
-@app.route('/triger', methods=['GET', 'POST'])
-def triger():
-    """
-    程序后面函数
-    用来让我自己启动tensorflow用的
-    :return:
-    """
-    # 照片美学相关环境启动
-    if not AesModel.in_progress:
-        AesModel.in_progress = True
-        new_thread = threading.Thread(target=launch_tensorflow)
-        new_thread.start()
-        return render_template('active.html')
-    else:
-        return render_template('inprogress.html')
-
-
-
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    if not AesModel.initFinish():
-        if not AesModel.in_progress:
-            return redirect(url_for('triger'))
-        else:
-            return render_template('invalid.html')
+
     if ServerConfig.SESSION_KEY_NAME in session:
+
         # 登录态被记住，那么直接进照片美学页面
         userName, userId = getUserId()
         if userName == None or userName == '':
             return redirect(url_for('login'))
         print('UserName recorded from session = %s id = %s' % (userName,userId))
         return render_template('index.html')
+
     return redirect(url_for('login'))
 
-
-def launch_tensorflow():
-    """
-    flask启动前初始化
-    :return:
-    """
-    # 照片美学相关环境启动
-    AesModel.initModel(app.config['AES_MODEL_PATH'])
 
 if __name__ == '__main__':
     # 数据库初始化
